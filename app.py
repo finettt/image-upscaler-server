@@ -12,31 +12,28 @@ import yaml
 from security import check_payload, is_base64
 def load_yaml(file_path):
     with open(file_path, 'r') as file:
-        return yaml.safe_load(file)
+        data = yaml.safe_load(file)
+        if data:
+            return data
+        else:
+            return {}
 
 def merge_yml(config1, config2):
-    if config2 == None:
-        config2 = {}
     merged = ChainMap(config1, config2)
     return dict(merged)
 
-first_config = load_yaml('./base/config.yaml')
+main_config = load_yaml('./base/config.yaml')
 
-second_config = load_yaml('./config.yaml')
+_config = load_yaml('./config.yaml')
 
 
-config = merge_yml(first_config, second_config)
+config = merge_yml(main_config, _config)
 
 app = Flask("app")
 limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=config["limiter_default_limits"],
-    header_name_mapping={
-        HEADERS.LIMIT : "X-My-Limit",
-        HEADERS.RESET : "X-My-Reset",
-        HEADERS.REMAINING: "X-My-Remaining"
-  }
 )
 UPLOADS_DIR = config["UPLOADS_DIR"]
 accepted_ext = config["accepted_ext"]
@@ -75,7 +72,7 @@ def handle_upload():
 
     return render_template("upload.html")
 
-@app.route("/proceed/<ID>")
+@app.route("/proceed/<ID>", methods=["GET"])
 def proceed(ID):
     file_path = os.path.join(UPLOADS_DIR, f"{ID}.png")
     if os.path.exists(file_path):
