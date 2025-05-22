@@ -1,0 +1,9 @@
+UPLOADS_DIR: ./uploads/
+accepted_ext:
+  - png
+  - jpg
+  - jpeg
+limiter_default_limits:
+  - "200 per day"
+  - "50 per hour"
+ip_ban_list: []
